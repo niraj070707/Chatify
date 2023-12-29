@@ -5,11 +5,13 @@ const User = require('./models/User');
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+const bcrypt = require("bcryptjs")
 
 dotenv.config(); 
 
 const clientUrl = process.env.CLIENT_URL;
 const secretkey = process.env.SECRET_KEY;
+const bcryptSalt = bcrypt.genSaltSync(10);
 
 const app = express();
 
@@ -27,6 +29,7 @@ app.use(cookieParser());
 app.get('/test', (req, res) => { 
     res.send("Hello world!");
 });
+
 
 app.get('/profile', (req, res)=>{
     const token = req.cookies?.token;
@@ -47,6 +50,34 @@ app.post('/logout', (req,res) => {
     res.cookie('token', '', {sameSite:'none', secure:true}).json('ok');
 });
 
+app.post('/login', async (req, res)=>{
+    const {username, password} = req.body;
+    const founduser =await User.findOne({username});
+    
+    if (!founduser) {
+        return res.status(401).json('Invalid credentials');
+    }
+
+    const passOk = bcrypt.compareSync(password, founduser.password);
+
+    if(passOk){
+        console.log(founduser);
+        jwt.sign({ userId: founduser._id, username }, secretkey, {}, (err, token)=>{
+            if (err) {
+                console.error('Error signing JWT:', err);
+                return res.status(500).json({ error: 'Internal Server Error' });
+            }
+
+            // Set the token in a cookie and send a success response
+            res.cookie('token', token, {sameSite:'none', secure:true}).status(201).json({
+                id : founduser._id,
+            }); 
+        });
+    }
+
+
+})
+
 app.post('/register', async (req, res) => { 
     const { username, password } = req.body;
 
@@ -59,7 +90,11 @@ app.post('/register', async (req, res) => {
         }
 
         // Create a new user
-        const createUser = await User.create({ username: username,password: password });
+        const hashedPassword = bcrypt.hashSync(password, bcryptSalt);
+        const createUser = await User.create({ 
+            username: username,
+            password: hashedPassword, 
+        });
 
         // Generate JWT token
         jwt.sign({ userId: createUser._id, username }, secretkey, {}, (err, token) => {
@@ -71,7 +106,7 @@ app.post('/register', async (req, res) => {
             // Set the token in a cookie and send a success response
             res.cookie('token', token, {sameSite:'none', secure:true}).status(201).json({
                 id : createUser._id,
-            });
+            }); 
         });
     } catch (error) {
         console.error('Error creating user:', error);
