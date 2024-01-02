@@ -5,7 +5,8 @@ const User = require('./models/User');
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
-const bcrypt = require("bcryptjs")
+const bcrypt = require("bcryptjs");
+const ws = require('ws');
 
 dotenv.config(); 
 
@@ -114,6 +115,11 @@ app.post('/register', async (req, res) => {
     }
 }); 
    
-app.listen(4000, () => {
-    console.log('Server is running on port 4000');
-});
+const server = app.listen(4000)
+
+const wss = new ws.WebSocketServer({server});
+
+wss.on('connection', (connection)=>{
+    console.log('connected');
+})
+
