@@ -54,7 +54,7 @@ app.get('/messages/:userId', async (req, res) => {
         const { userId } = req.params;
         const userData = await getOurUserId(req);
         const ourId = userData.userId;
-        console.log({ userId, ourId });
+
         const messages = await Message.find({
             sender: { $in: [userId, ourId] },
             recipient: { $in: [userId, ourId] },
@@ -68,6 +68,12 @@ app.get('/messages/:userId', async (req, res) => {
 
 });  
 
+app.get('/user', async (req, res)=>{
+    const userObj = await User.find({}, '_id username');
+    res.json(userObj);
+})
+
+ 
 app.get('/profile', (req, res) => {
     const token = req.cookies?.token;
 

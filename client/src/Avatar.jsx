@@ -8,11 +8,11 @@ const Avatar = ({userId, username, online}) => {
     const color = colors[colorIndex];
 
     return (
-        <div className={'w-8 h-8 rounded-full flex relative items-center ' + color}>
+        <div className={'w-8 h-8 border-white rounded-full relative flex items-center border-2 '+ color}>
             <div className='w-full text-center  opacity-70'>
                 {username[0]}
             </div>
-            <div className={'w-3 h-3 border-yellow-400  border-2 absolute rounded-full bottom-0 right-0 '+ (online ? 'bg-green-800' : 'bg-gray-500')}></div>
+            <div className={'w-3 h-3 border-yellow-400  border-2 absolute rounded-full bottom-0 right-0 '+ (online ? 'bg-green-600' : 'bg-gray-400')}></div>
         </div>
     )
 }
