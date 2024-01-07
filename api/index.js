@@ -87,7 +87,7 @@ app.get('/profile', (req, res) => {
     } else { 
         res.status(401).json('!no token');
     }
-})  
+})   
 
 app.post('/logout', (req, res) => {
     res.cookie('token', '', { sameSite: 'none', secure: true }).json('ok');
@@ -155,7 +155,7 @@ app.post('/register', async (req, res) => {
         console.error('Error creating user:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
-});
+}); 
 
 const server = app.listen(4000)
 
@@ -177,11 +177,12 @@ wss.on('connection', (connection, req) => {
         connection.ping();
         connection.deathTimer = setTimeout(()=>{
             connection.isAlive = false;
+            clearInterval(connection.timer);
             connection.terminate();
             notifyAboutOnlinePeople();
         }, 1000);
     }, 5000);  
- 
+   
     connection.on('pong', ()=>{
         clearTimeout(connection.deathTimer);
     })    
@@ -213,7 +214,7 @@ wss.on('connection', (connection, req) => {
                 sender: connection.userId,
                 recipient: to,
                 text,
-            })
+            }) 
             console.log(to);
             console.log(text);
             [...wss.clients]
