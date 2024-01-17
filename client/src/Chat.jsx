@@ -13,7 +13,7 @@ const Chat = () => {
     const [newMessageText, setNewMessageText] = useState('');
     const [messages, setMessages] = useState([]);
     const [offlineUser, setOfflineUser] = useState({});
-    const {username, id, setId, setUsername} = useContext(UserContext);
+    const { username, id, setId, setUsername } = useContext(UserContext);
     const messagesEndRef = useRef(null);
     useEffect(() => {
         connectWebSocket();
@@ -87,30 +87,54 @@ const Chat = () => {
         }
     };
 
-    const sendMessage = (ev) => {
-        ev.preventDefault();
-        if (newMessageText.trim() !== '') {
-            const message = {
-                to: selectedUserRef.current,
-                text: newMessageText.trim(),
-            };
-            try {
-                ws.send(JSON.stringify(message));
-            } catch (error) {
-                console.error('Error while sending message:', error.message);
-            }
+    const sendMessage = (ev, file = null) => {
+        if (ev) ev.preventDefault();
+
+        const message = {
+            to: selectedUserRef.current,
+            text: newMessageText.trim(),
+            file,
+        };
+        try {
+            ws.send(JSON.stringify(message));
+        } catch (error) {
+            console.error('Error while sending message:', error.message);
         }
-        setMessages((prev) => [
-            ...prev,
-            {
-                text: newMessageText,
-                sender: id,
-                recipient: selectedUserRef.current,
-                _id: Date.now(),
-            },
-        ]);
+
+
+        if (newMessageText.trim() !== '') {
+            setMessages((prev) => [
+                ...prev,
+                {
+                    text: newMessageText,
+                    sender: id,
+                    recipient: selectedUserRef.current,
+                    _id: Date.now(),
+                },
+            ]);
+        }
         setNewMessageText('');
+
+        if (file) {
+            axios.get('/messages/' + selectedUserRef.current).then((res) => {
+                setMessages(res.data);
+            });
+        }
     };
+
+    function sendFile(ev) {
+        const reader = new FileReader();
+        reader.readAsDataURL(ev.target.files[0]);
+        console.log(ev.target.files[0].name);
+
+        reader.onload = () => {
+            sendMessage(null, {
+                name: ev.target.files[0].name,
+                data: reader.result,
+            })
+        }
+
+    }
 
 
     const onlineUserExcludingOurUser = { ...onlinePeople };
@@ -128,12 +152,12 @@ const Chat = () => {
         }
 
         return uniqueObjects;
-    };    
+    };
 
     const uniqueMessage = findUniqueObjectsById(messages);
 
-    const logOut = ()=>{
-        axios.post('/logout').then((res)=>{
+    const logOut = () => {
+        axios.post('/logout').then((res) => {
             setWs(null);
             setId(null);
             setUsername(null);
@@ -196,14 +220,24 @@ const Chat = () => {
                         <div className="text-gray-400 flex h-full justify-center items-center">
                             <div>&larr; Select a person from the sidebar</div>
                         </div>
-                    )} 
+                    )}
                     {!!selectedUserRef.current && (
                         <div className="relative h-full ">
                             <div className="overflow-y-scroll absolute top-0 left-0 right-0 bottom-2 text-white">
                                 {uniqueMessage.map(message => (
                                     <div key={message._id} className={(message.sender === id ? 'text-right' : 'text-left')}>
-                                        <div className={"text-left whitespace-normal inline-block p-2 m-2 rounded-md text-sm " + (message.sender === id ? 'bg-blue-500 text-white' : 'bg-white text-gray-500')}>
+                                        <div className={"text-left whitespace-normal inline-block p-2 m-2 rounded-md text-sm " + (message.sender === id ? 'bg-blue-500 text-white' : 'bg-white text-gray-500 ')}>
                                             {message.text}
+                                            {message.file && (
+                                                <div>
+                                                    <a href={axios.defaults.baseURL + "/uploads/" + message.file} className='border-b-2 flex items-center justify-center'>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-6">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" />
+                                                        </svg>
+                                                        {message.file}
+                                                    </a>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
@@ -223,12 +257,21 @@ const Chat = () => {
                             placeholder="Enter the message"
                             className="flex-grow p-2 rounded-sm border bg-white"
                         />
-                        
+
+                        <label className='transition ease-in-out delay-150 p-2 text-white flex items-center justify-center rounded-sm hover:bg-slate-600 duration-300  cursor-pointer'>
+                            <input type="file" className='hidden' onChange={sendFile} />
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" />
+                            </svg>
+                        </label>
+
                         <button
                             type="submit"
-                            className="bg-blue-500 p-2 rounded-sm text-white"
+                            className="transition ease-in-out delay-150 p-2 text-white flex items-center justify-center rounded-sm hover:bg-slate-600 duration-300 cursor-pointer "
                         >
-                            Send
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                                <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
+                            </svg>
                         </button>
                     </form>
                 )}

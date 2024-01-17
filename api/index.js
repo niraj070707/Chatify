@@ -8,6 +8,7 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const ws = require('ws');
 const Message = require('./models/Message');
+const fs = require('fs');
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.use(cors({
     origin: clientUrl,
 }));
 
+app.use('/uploads', express.static(__dirname+'/uploads'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -208,18 +210,33 @@ wss.on('connection', (connection, req) => {
 
     connection.on('message', async (message) => {
         const data = JSON.parse(message.toString());
-        const { to, text } = data;
-        if (to && text) {
+        const { to, text, file } = data;
+        let filename = null;
+        if(file){
+            console.log(file);
+            const parts = file.name.split('.');
+            const ext = parts[parts.length-1];
+            filename = Date.now() + '.' + ext;
+            const path = __dirname + '/uploads/' + filename;
+            const bufferData = new Buffer(file.data.split(',')[1], 'base64');
+            fs.writeFile(path, bufferData,()=>{
+                console.log('file saved' + path);
+            });
+        }
+         
+        if (to && (text || file)) {
             const messageDoc = await Message.create({
                 sender: connection.userId,
                 recipient: to,
                 text,
+                file: filename,
             }) 
             console.log(to);
             console.log(text);
             [...wss.clients]
                 .filter(c => c.userId === to)
                 .forEach(c => c.send(JSON.stringify({
+                    file: filename,
                     text,
                     sender: connection.userId,
                     _id: messageDoc._id,
