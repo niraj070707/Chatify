@@ -4,7 +4,7 @@ import Avatar from './Avatar';
 import Logo from './Logo';
 import { UserContext } from './UserContext';
 import axios from 'axios';
-import Contacts from '../Contacts';
+import Contacts from './Contacts';
 
 const Chat = () => {
     const [ws, setWs] = useState(null);
@@ -155,6 +155,9 @@ const Chat = () => {
     };
 
     const uniqueMessage = findUniqueObjectsById(messages);
+
+    console.log('current : ' + selectedUserRef.current);
+    // console.log('userId  : ' + userId);
 
     const logOut = () => {
         axios.post('/logout').then((res) => {

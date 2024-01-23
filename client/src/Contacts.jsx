@@ -1,5 +1,5 @@
 import React from 'react';
-import Avatar from './src/Avatar';
+import Avatar from './Avatar';
 
 const Contacts = ({id, selected, online, username, onClick}) => {
     return (
@@ -16,7 +16,7 @@ const Contacts = ({id, selected, online, username, onClick}) => {
             }
         >
             {selected && (
-                <div className="w-1 h-12 bg-blue-500 rounded-r-md"></div>
+                <div className=" w-1 h-12 bg-blue-500 rounded-r-md "></div>
             )}
             <div className="flex gap-2 py-2 pl-2">
                 <Avatar online={online} userId={id} username={username} />
