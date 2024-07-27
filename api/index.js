@@ -20,9 +20,10 @@ const app = express();
 
 mongoose.connect(process.env.MONGO_URL);
 
-app.use(cors({
-    credentials: true,
-    origin: clientUrl,
+console.log(clientUrl)
+app.use(cors({ 
+    credentials:true,
+    origin:clientUrl
 }));
 
 app.use('/uploads', express.static(__dirname+'/uploads'));
@@ -48,7 +49,7 @@ function getOurUserId(req) {
         } else {
             reject('!no token');
         }
-    });
+    }); 
 }
  
 app.get('/messages/:userId', async (req, res) => {
