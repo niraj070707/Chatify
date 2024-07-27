@@ -217,6 +217,7 @@ const Chat = () => {
                     </div>
                 </div>
             </div>
+
             <div className="bg-gray-700 w-2/3 flex flex-col">
                 <div className="flex-grow bg-gray-800">
                     {selectedUserRef.current === '' && (
@@ -224,6 +225,7 @@ const Chat = () => {
                             <div>&larr; Select a person from the sidebar</div>
                         </div>
                     )}
+                    
                     {!!selectedUserRef.current && (
                         <div className="relative h-full ">
                             <div className="overflow-y-scroll absolute top-0 left-0 right-0 bottom-2 text-white">

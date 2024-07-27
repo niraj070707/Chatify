@@ -28,13 +28,13 @@ app.use(cors({
 app.use('/uploads', express.static(__dirname+'/uploads'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use(cookieParser()); 
 
 app.get('/test', (req, res) => {
     res.send("Hello world!");
 });
 
-function getOurUserId(req) {
+function getOurUserId(req) { 
     return new Promise((resolve, reject) => {
         const token = req.cookies?.token;
 
@@ -50,7 +50,7 @@ function getOurUserId(req) {
         }
     });
 }
-
+ 
 app.get('/messages/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -58,7 +58,7 @@ app.get('/messages/:userId', async (req, res) => {
         const ourId = userData.userId;
 
         const messages = await Message.find({
-            sender: { $in: [userId, ourId] },
+            sender: { $in: [userId, ourId] }, 
             recipient: { $in: [userId, ourId] },
         }).sort({ createdAt: 1 });
 
@@ -67,7 +67,6 @@ app.get('/messages/:userId', async (req, res) => {
         console.error('Error fetching messages:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     } 
-
 });  
 
 app.get('/user', async (req, res)=>{
@@ -122,7 +121,7 @@ app.post('/login', async (req, res) => {
 
 
 })  
-
+  
 app.post('/register', async (req, res) => {
     const { username, password } = req.body;
 
