@@ -18,7 +18,16 @@ const bcryptSalt = bcrypt.genSaltSync(10);
 
 const app = express();
 
-mongoose.connect(process.env.MONGO_URL);
+async function connectToDatabase() {
+    try {
+        await mongoose.connect('mongodb+srv://Mern_chat:NHWEh6RZ2rrcp2vb@cluster0.m5cwvzx.mongodb.net/?retryWrites=true&w=majority');
+        console.log("MongoDB Connected !!");
+    } catch (err) {
+        console.error("MongoDB Connection Error !!", err);
+    }
+}
+
+connectToDatabase();
 
 console.log(clientUrl)
 app.use(cors({ 
@@ -153,7 +162,7 @@ app.post('/register', async (req, res) => {
                 id: createUser._id,
             });
         });
-    } catch (error) {
+    } catch (error) { 
         console.error('Error creating user:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
