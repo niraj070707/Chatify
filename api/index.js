@@ -29,7 +29,6 @@ async function connectToDatabase() {
 
 connectToDatabase();
 
-console.log(clientUrl)
 app.use(cors({ 
     credentials:true,
     origin:clientUrl

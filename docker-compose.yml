@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  client:
+    image: node:18
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    command: sh -c "yarn install && yarn dev" # Ensure dependencies are installed
+    environment:
+      - NODE_ENV=development
+    stdin_open: true
+    tty: true
+    depends_on:
+      - api
+
+  api:
+    image: node:18
+    working_dir: /app
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./api:/app
+      - /app/node_modules
+    command:
+      sh -c "yarn install && yarn start"  # Install dependencies before starting the API
+    environment:
+      - NODE_ENV=development
+    stdin_open: true
+    tty: true
