@@ -18,6 +18,12 @@ const bcryptSalt = bcrypt.genSaltSync(10);
 
 const app = express();
 
+app.use(cors({ 
+    credentials:true,
+    origin:clientUrl
+}));
+console.log("clienURL : ",clientUrl);
+
 async function connectToDatabase() {
     try {
         await mongoose.connect('mongodb+srv://Mern_chat:NHWEh6RZ2rrcp2vb@cluster0.m5cwvzx.mongodb.net/?retryWrites=true&w=majority');
@@ -28,12 +34,6 @@ async function connectToDatabase() {
 }
 
 connectToDatabase();
-
-app.use(cors({ 
-    credentials:true,
-    origin:clientUrl
-}));
-
 app.use('/uploads', express.static(__dirname+'/uploads'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
