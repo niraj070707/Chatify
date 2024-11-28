@@ -9,7 +9,7 @@ const bcrypt = require("bcryptjs");
 const ws = require('ws');
 const Message = require('./models/Message');
 const fs = require('fs');
-
+ 
 dotenv.config();
 
 const clientUrl = process.env.CLIENT_URL;
@@ -20,7 +20,8 @@ const app = express();
 
 app.use(cors({ 
     credentials:true,
-    origin:clientUrl
+    origin: "http://20.197.39.178:3000",
+    methods: ["GET", "POST", "PUT", "DELETE"],
 }));
 console.log("clienURL : ",clientUrl);
 
@@ -39,7 +40,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser()); 
 
-app.get('/test', (req, res) => {
+app.get('/api/test', (req, res) => {
     res.send("Hello world!");
 });
 
@@ -60,7 +61,7 @@ function getOurUserId(req) {
     }); 
 }
  
-app.get('/messages/:userId', async (req, res) => {
+app.get('/api/messages/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
         const userData = await getOurUserId(req);
@@ -78,13 +79,13 @@ app.get('/messages/:userId', async (req, res) => {
     } 
 });  
 
-app.get('/user', async (req, res)=>{
+app.get('/api/user', async (req, res)=>{
     const userObj = await User.find({}, '_id username');
     res.json(userObj);
 })
 
  
-app.get('/profile', (req, res) => {
+app.get('/api/profile', (req, res) => {
     const token = req.cookies?.token;
 
     if (token) {
@@ -99,11 +100,15 @@ app.get('/profile', (req, res) => {
     }
 })   
 
-app.post('/logout', (req, res) => {
-    res.cookie('token', '', { sameSite: 'none', secure: true }).json('ok');
+app.post('/api/logout', (req, res) => {
+    res.cookie('token', '', {
+        sameSite: 'Lax', // More lenient for cross-origin interactions
+        secure: false,   // Works for HTTP during development
+        httpOnly: true,  // Ensures cookie is not accessible via JavaScript
+      }).json('ok');
 });
 
-app.post('/login', async (req, res) => {
+app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     const founduser = await User.findOne({ username });
 
@@ -122,7 +127,11 @@ app.post('/login', async (req, res) => {
             }
 
             // Set the token in a cookie and send a success response
-            res.cookie('token', token, { sameSite: 'none', secure: true }).status(201).json({
+            res.cookie('token', token, {
+                sameSite: 'Lax', // More lenient for cross-origin interactions
+                secure: false,   // Works for HTTP during development
+                httpOnly: true,  // Ensures cookie is not accessible via JavaScript
+              }).status(201).json({
                 id: founduser._id,
             });
         });
@@ -131,7 +140,7 @@ app.post('/login', async (req, res) => {
 
 })  
   
-app.post('/register', async (req, res) => {
+app.post('/api/register', async (req, res) => {
     const { username, password } = req.body;
 
     try {
@@ -157,7 +166,11 @@ app.post('/register', async (req, res) => {
             }
 
             // Set the token in a cookie and send a success response
-            res.cookie('token', token, { sameSite: 'none', secure: true }).status(201).json({
+            res.cookie('token', token, {
+                sameSite: 'Lax', // More lenient for cross-origin interactions
+                secure: false,   // Works for HTTP during development
+                httpOnly: true,  // Ensures cookie is not accessible via JavaScript
+              }).status(201).json({
                 id: createUser._id,
             });
         });

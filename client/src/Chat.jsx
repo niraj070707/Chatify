@@ -47,7 +47,7 @@ const Chat = () => {
     }, [onlinePeople])
 
     const connectWebSocket = () => {
-        const newWs = new WebSocket('ws://localhost:4000');
+        const newWs = new WebSocket(import.meta.env.VITE_WS_URL);
 
         newWs.addEventListener('open', () => {
             console.log('WebSocket connected');
@@ -136,9 +136,18 @@ const Chat = () => {
 
     }
 
+    const deleteUndefinedProperties = (obj) => {
+        for (const key in obj) {
+            if (key===undefined || obj[key]===undefined) {
+                delete obj[key]; 
+            }
+        }
+    };
 
+    deleteUndefinedProperties(onlinePeople);
     const onlineUserExcludingOurUser = { ...onlinePeople };
     delete onlineUserExcludingOurUser[id];
+    
 
     const findUniqueObjectsById = (arr) => {
         const uniqueObjects = [];
@@ -147,7 +156,7 @@ const Chat = () => {
         for (const obj of arr) {
             if (!idSet.has(obj._id)) {
                 uniqueObjects.push(obj);
-                idSet.add(obj._id);
+                idSet.add(obj._id); 
             }
         }
 
@@ -156,9 +165,6 @@ const Chat = () => {
 
     const uniqueMessage = findUniqueObjectsById(messages);
 
-    console.log('current : ' + selectedUserRef.current);
-    // console.log('userId  : ' + userId);
-
     const logOut = () => {
         axios.post('/logout').then((res) => {
             setWs(null);
@@ -166,7 +172,6 @@ const Chat = () => {
             setUsername(null);
         })
     }
-    console.log('bi');
     return (
         <div className="flex h-screen">
             <div className="w-1/3 flex flex-col bg-blue-100">
